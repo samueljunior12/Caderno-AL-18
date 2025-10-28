@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreamento Logístico - Dark</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Cores e Estilos Corporativos (Dark Mode) */
+        :root {
+            --cor-principal: #00bcd4; /* Azul Ciano Brilhante (Destaque) */
+            --cor-fundo-escuro: #121212; /* Fundo Principal Preto */
+            --cor-fundo-card: #1e1e1e; /* Fundo dos elementos Escuro */
+            --cor-texto-primaria: #ffffff; /* Texto Branco */
+            --cor-texto-secundaria: #b0b0b0; /* Cinza Claro Secundário */
+            --cor-borda: #333333; /* Borda Escura */
+            --sombra-card: 0 4px 12px rgba(0, 0, 0, 0.5); /* Sombra mais visível no fundo escuro */
+            --cor-botao-padrao: #007bff; /* Azul padrão para botões */
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--cor-fundo-escuro);
+            margin: 0;
+            padding: 20px;
+            color: var(--cor-texto-primaria);
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--cor-fundo-card);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--sombra-card);
+            border: 1px solid var(--cor-borda);
+        }
+        h1 {
+            color: var(--cor-principal);
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            font-size: 2em;
+            border-bottom: 2px solid var(--cor-principal);
+        }
+
+        /* ---------------------------------- */
+        /* ABAS (TABS) */
+        /* ---------------------------------- */
+        .tabs { display: flex; margin-bottom: 0; }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #333; /* Fundo do botão escuro */
+            border: 1px solid var(--cor-borda);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            margin-right: 2px;
+            color: var(--cor-texto-secundaria);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background-color: var(--cor-fundo-card);
+            color: var(--cor-principal);
+            border-color: var(--cor-borda);
+            border-top: 3px solid var(--cor-principal); /* Destaque azul */
+            padding-top: 8px; /* Ajuste para borda superior */
+        }
+        .tab-content {
+            background-color: var(--cor-fundo-card);
+            padding: 20px;
+            border-radius: 0 6px 6px 6px;
+            min-height: 300px;
+            border: 1px solid var(--cor-borda);
+            border-top: none;
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ---------------------------------- */
+        /* FORMULÁRIO DE CADASTRO */
+        /* ---------------------------------- */
+        #form-nova-entrada {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 20px;
+            align-items: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-size: 0.9em;
+            color: var(--cor-texto-secundaria);
+            font-weight: 600;
+        }
+        .full-width-group {
+            grid-column: 1 / span 2;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #444; /* Borda mais clara para contraste */
+            border-radius: 4px;
+            background-color: #2a2a2a; /* Fundo dos inputs */
+            color: var(--cor-texto-primaria);
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        #btn-adicionar {
+            grid-column: 1 / span 2;
+            padding: 12px;
+            background-color: var(--cor-botao-padrao); /* Mantém um azul forte */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        #btn-adicionar:hover {
+            background-color: #0056b3;
+        }
+
+        /* ---------------------------------- */
+        /* ABA 2: VISUALIZAÇÃO E EDIÇÃO */
+        /* ---------------------------------- */
+        .filtro-area {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid var(--cor-borda);
+            border-radius: 4px;
+            background-color: #242424; /* Fundo do filtro */
+        }
+        .filtro-area label { font-weight: 600; color: var(--cor-texto-primaria); }
+        .filtro-area input { flex-grow: 1; max-width: 250px; }
+        .filtro-area button { padding: 8px 15px; background-color: var(--cor-botao-padrao); color: white; border: none; border-radius: 4px; cursor: pointer; }
+
+        .dia-header {
+            background-color: var(--cor-principal);
+            color: var(--cor-fundo-escuro); /* Texto escuro no header claro */
+            padding: 8px 15px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .entrada-timeline {
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 15px;
+            padding: 15px;
+            background-color: #242424; /* Fundo da timeline */
+            border-left: 5px solid var(--cor-principal);
+            position: relative;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .time-label {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--cor-principal);
+            background-color: #2a2a2a; /* Fundo do time label */
+            border: 1px solid var(--cor-principal);
+            border-radius: 4px;
+            text-align: center;
+            height: 100%;
+        }
+        .time-label span {
+            font-size: 0.7em;
+            color: var(--cor-texto-secundaria);
+            margin: 2px 0;
+        }
+
+        .btn-remover {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            line-height: 1;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+
+        .action-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            min-width: 120px; /* Para manter o alinhamento */
+        }
+
+        .btn-acao {
+            background-color: var(--cor-botao-padrao);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 100%;
+        }
+        .btn-acao.disabled {
+            background-color: #495057;
+            cursor: not-allowed;
+            color: #b0b0b0;
+        }
+        .btn-acao.exportar {
+            background-color: #28a745;
+            margin-top: 15px; /* Adiciona margem para separá-lo do formulário */
+        }
+        .btn-acao.exportar:hover { background-color: #1e7e34; }
+
+
+        /* Estilos de Status */
+        .status-select {
+            padding: 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 1px solid #ced4da;
+            font-size: 0.9em;
+            width: 100%;
+            text-align: center;
+        }
+        /* Ajuste de cores para contraste no modo escuro */
+        .status-select.EMTRÂNSITO {
+            background-color: #4e4429; /* Amarelo escuro */
+            color: #ffd700; /* Texto amarelo claro */
+            border-color: #6a5d2b;
+        }
+        .status-select.CONCLUÍDA {
+            background-color: #1d3e24; /* Verde escuro */
+            color: #79f298; /* Texto verde claro */
+            border-color: #2b5736;
+        }
+        .status-select.PENDENTE {
+            background-color: #2a2a2a;
+            color: var(--cor-texto-secundaria);
+            border-color: #444;
+        }
+        .alert-error {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            background-color: #58151c; /* Fundo vermelho escuro */
+            color: #f7a0a8; /* Texto vermelho claro */
+            border: 1px solid #721c24;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Rastreamento Logístico de Carro Correio</h1>
+
+        <div class="tabs">
+            <div class="tab-button active" onclick="openTab('cadastro', this)">➕ Novo Log</div>
+            <div class="tab-button" onclick="openTab('visualizacao', this)">📋 Visualização e Busca</div>
+        </div>
+
+        <div class="tab-content">
+
+            <div id="cadastro" class="tab-pane active">
+                <p style="color: var(--cor-principal); margin-bottom: 20px; font-weight: 600;">Preencha os campos abaixo para registrar um novo log de atividade.</p>
+
+                <form id="form-nova-entrada">
+
+                    <div class="form-group">
+                        <label for="data-registro">Data da Atividade</label>
+                        <input type="date" id="data-registro" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="status-inicial">Status Inicial</label>
+                        <select id="status-inicial" required>
+                            <option value="PENDENTE">PENDENTE</option>
+                            <option value="EM TRÂNSITO">EM TRÂNSITO</option>
+                            <option value="CONCLUÍDA">CONCLUÍDA</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hora-inicio">Hora de Início</label>
+                        <input type="time" id="hora-inicio" value="07:00" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="hora-fim">Hora de Fim</label>
+                        <input type="time" id="hora-fim" value="11:00" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="responsavel">Responsável / Solicitante</label>
+                        <input type="text" id="responsavel" placeholder="Nome" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="local">Local / Cidade</label>
+                        <input type="text" id="local" placeholder="Ex: Macaé, Rio de Janeiro" required>
+                    </div>
+
+                    <div class="form-group full-width-group">
+                        <label for="email-remetente">E-mail Remetente (Origem)</label>
+                        <input type="email"
+                               id="email-remetente"
+                               placeholder="Seu e-mail Petrobras (Origem)"
+                               value="samuel.nascimento1.prestserv@petrobras.com.br"
+                               required>
+                    </div>
+
+                    <div class="form-group full-width-group">
+                        <label for="email-notificacao">E-mail Destino (Notificação)</label>
+                        <input type="email" id="email-notificacao" placeholder="E-mail do destinatário da notificação">
+                    </div>
+
+                    <div class="form-group full-width-group">
+                        <label for="obs">Observações / Detalhes</label>
+                        <input type="text" id="obs" placeholder="Detalhes adicionais sobre a atividade.">
+                    </div>
+
+                    <div class="form-group full-width-group">
+                        <button type="submit" id="btn-adicionar">Adicionar Log</button>
+                    </div>
+                </form>
+                <div id="aviso-sobreposicao" class="alert-error" style="display: none;"></div>
+
+                <button onclick="exportarLogs()" class="btn-acao full-width-group exportar">
+                    💾 Exportar Dados (HTML)
+                </button>
+            </div>
+
+            <div id="visualizacao" class="tab-pane">
+
+                <div class="filtro-area">
+                    <label for="data-filtro">🔎 Informe a Data da Busca:</label>
+                    <input type="date" id="data-filtro" onchange="renderizarTimeline()">
+                    <button onclick="mostrarTodosLogs()">Mostrar Tudo</button>
+                </div>
+
+                <div id="timeline-rastreamento">
+                    </div>
+            </div>
+        </div>
+
+        <p id="local-status" style="font-size: 0.8em; text-align: center; color: var(--cor-texto-secundaria); margin-top: 20px;">
+            *Dados salvos localmente no seu navegador. A automação de status funciona apenas com a página aberta.
+        </p>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'rastreioLogsClean';
+        const timelineEl = document.getElementById('timeline-rastreamento');
+        const formEl = document.getElementById('form-nova-entrada');
+        const filtroDataEl = document.getElementById('data-filtro');
+        const avisoSobreposicaoEl = document.getElementById('aviso-sobreposicao');
+
+        const STATUS_OPTIONS = ["PENDENTE", "EM TRÂNSITO", "CONCLUÍDA"];
+
+        let logs = [];
+
+        document.getElementById('data-registro').valueAsDate = new Date();
+
+
+        // ==========================================================
+        // 1. UTILITÁRIOS DE HORA/DATA
+        // ==========================================================
+
+        function horaParaMinutos(hora) {
+            const [h, m] = hora.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function verificarSobreposicao(data, inicio, fim, idAtual = null) {
+            const minutosInicio = horaParaMinutos(inicio);
+            const minutosFim = horaParaMinutos(fim);
+
+            return logs.some(log => {
+                if (log.timestampInicio == idAtual) return false;
+                if (log.dataRegistro !== data) return false;
+
+                const logMinInicio = horaParaMinutos(log.horaInicio);
+                const logMinFim = horaParaMinutos(log.horaFim);
+
+                const sobreposicao = (
+                    (minutosInicio < logMinFim && minutosFim > logMinInicio)
+                );
+
+                return sobreposicao;
+            });
+        }
+
+        function getHoraAtualFormatada() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function getDataAtualFormatada() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatarData(dataISO) {
+             if (!dataISO) return '';
+            const [year, month, day] = dataISO.split('-');
+            const dataObj = new Date(year, month - 1, day);
+            const hoje = new Date();
+
+            // Corrige para considerar apenas a data, ignorando o tempo, para comparação
+            const dataSemTempo = new Date(dataObj.getFullYear(), dataObj.getMonth(), dataObj.getDate());
+            const hojeSemTempo = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+            if (dataSemTempo.getTime() === hojeSemTempo.getTime()) return 'HOJE';
+
+            return dataObj.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+
+        // ==========================================================
+        // 2. FUNÇÕES DE ARMAZENAMENTO E TABS
+        // ==========================================================
+
+        function carregarLogs() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            logs = data ? JSON.parse(data) : [];
+        }
+
+        function salvarLogs() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+            // Renderiza a timeline se a aba de visualização estiver ativa
+            if (document.getElementById('visualizacao').classList.contains('active')) {
+                renderizarTimeline();
+            }
+        }
+
+        window.openTab = function(tabName, elmnt) {
+            const tabPanes = document.getElementsByClassName("tab-pane");
+            for (let i = 0; i < tabPanes.length; i++) {
+                tabPanes[i].classList.remove('active');
+            }
+            const tabButtons = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+
+            document.getElementById(tabName).classList.add('active');
+            elmnt.classList.add('active');
+
+            if (tabName === 'visualizacao') {
+                renderizarTimeline();
+            }
+        }
+
+        window.mostrarTodosLogs = function() {
+            filtroDataEl.value = '';
+            renderizarTimeline(true);
+        }
+
+
+        // ==========================================================
+        // 3. FUNÇÕES DE RENDERIZAÇÃO E EDIÇÃO INLINE
+        // ==========================================================
+
+        function gerarMailtoLink(log) {
+            const dataFormatada = new Date(log.dataRegistro).toLocaleDateString('pt-BR');
+
+            let mainMessage;
+            if (log.status === 'EM TRÂNSITO') {
+                // Mensagem para status EM TRÂNSITO
+                mainMessage = `Sua atividade de rastreamento logístico está EM ANDAMENTO.`;
+            } else if (log.status === 'CONCLUÍDA') {
+                // Mensagem para status CONCLUÍDA
+                mainMessage = `A atividade de rastreamento logístico foi CONCLUÍDA com sucesso.`;
+            } else {
+                // Mensagem para status PENDENTE
+                mainMessage = `Sua atividade de rastreamento logístico está programada.`;
+            }
+
+            // Nova Assinatura
+            const signature = `SAMUEL DA SILVA NASCIMENTO JUNIOR\nEquipe de Auditoria\nArmazenagem\nBA/SOP/ARM`;
+
+            const subject = encodeURIComponent(`NOTIFICAÇÃO DE RASTREAMENTO: ${log.local} - ${dataFormatada} - ${log.status}`);
+
+            const body = encodeURIComponent(
+                `Prezado(a) ${log.responsavel},\n\n` +
+                `${mainMessage}\n\n` +
+                `Detalhes da Programação:\n` +
+                `Data: ${dataFormatada}\n` +
+                `Horário: De ${log.horaInicio} até ${log.horaFim}\n` +
+                `Local: ${log.local}\n` +
+                `Status Atual: ${log.status}\n\n` +
+                `Observações: ${log.obs || 'Nenhuma observação adicional.'}\n\n` +
+                `Atenciosamente,\n\n` +
+                `${signature}` // Usando a nova assinatura
+            );
+
+            const cc = encodeURIComponent(log.emailRemetente || '');
+
+            return `mailto:${log.emailNotificacao}?subject=${subject}&body=${body}&cc=${cc}`;
+        }
+
+
+        function renderizarTimeline(mostrarTudo = false) {
+            timelineEl.innerHTML = '';
+
+            const dataFiltro = filtroDataEl.value;
+
+            if (!dataFiltro && !mostrarTudo && logs.length > 0) {
+                 // Define a data atual como filtro padrão se a visualização for aberta
+                 filtroDataEl.value = getDataAtualFormatada();
+                 // Tenta renderizar com a data atual
+                 return renderizarTimeline();
+            }
+
+            if (!dataFiltro && !mostrarTudo && logs.length === 0) {
+                 timelineEl.innerHTML = `
+                     <p style="text-align: center; color: var(--cor-texto-secundaria); padding: 20px 0;">
+                         Nenhum log registrado. Comece adicionando um novo log na aba "Novo Log".
+                     </p>`;
+                 return;
+            }
+
+            const logsFiltrados = dataFiltro
+                ? logs.filter(log => log.dataRegistro === dataFiltro)
+                : logs;
+
+            if (logsFiltrados.length === 0) {
+                const mensagem = dataFiltro
+                    ? `❌ Nenhuma programação encontrada para a data ${formatarData(dataFiltro)}.`
+                    : 'Nenhum log registrado até o momento.';
+
+                timelineEl.innerHTML = `<p style="text-align: center; color: var(--cor-texto-secundaria); padding: 20px 0;">${mensagem}</p>`;
+                return;
+            }
+
+            const logsPorDia = logsFiltrados.reduce((acc, log) => {
+                const data = log.dataRegistro;
+                if (!acc[data]) { acc[data] = []; }
+                acc[data].push(log);
+                return acc;
+            }, {});
+
+            const datasOrdenadas = Object.keys(logsPorDia).sort().reverse();
+
+            datasOrdenadas.forEach(data => {
+                const logsDoDia = logsPorDia[data];
+                logsDoDia.sort((a, b) => horaParaMinutos(a.horaInicio) - horaParaMinutos(b.horaInicio));
+
+                const diaDiv = document.createElement('div');
+                diaDiv.className = 'dia-rastreio';
+                diaDiv.innerHTML = `<div class="dia-header">📅 ${formatarData(data)}</div>`;
+
+                logsDoDia.forEach(log => {
+                    const tagClass = log.status.toUpperCase().replace(/\s/g, '');
+                    const statusSelect = STATUS_OPTIONS.map(status => `
+                        <option value="${status}" ${log.status === status ? 'selected' : ''}>${status}</option>
+                    `).join('');
+
+                    const mailtoLink = log.emailNotificacao ? gerarMailtoLink(log) : '#';
+                    const isDisabled = !log.emailNotificacao;
+                    const btnClass = isDisabled ? 'btn-acao disabled' : 'btn-acao';
+
+                    const entradaDiv = document.createElement('div');
+                    entradaDiv.className = 'entrada-timeline';
+                    entradaDiv.innerHTML = `
+                        <button class="btn-remover" onclick="removerLog('${log.timestampInicio}')">X</button>
+                        <div class="time-label">
+                            ${log.horaInicio} <span>até</span> ${log.horaFim}
+                        </div>
+                        <div class="details">
+                            <div class="details-info" style="color: var(--cor-texto-primaria);">
+                                <p style="font-size: 1.1em; font-weight: 700; margin-bottom: 5px;">
+                                    Local:
+                                    <span id="local-${log.timestampInicio}"
+                                                class="editable-field"
+                                                onclick="toggleEdit('${log.timestampInicio}', 'local', '${log.local}')"
+                                                style="border-bottom: 1px dashed var(--cor-principal); cursor: pointer;">
+                                            ${log.local}
+                                    </span>
+                                </p>
+                                <p style="font-size: 0.9em; margin-bottom: 3px;">Solicitante:
+                                    <span id="responsavel-${log.timestampInicio}"
+                                                class="editable-field"
+                                                onclick="toggleEdit('${log.timestampInicio}', 'responsavel', '${log.responsavel}')"
+                                                style="cursor: pointer;">
+                                            ${log.responsavel}
+                                    </span>
+                                </p>
+                                <p style="font-size: 0.8em; color: var(--cor-texto-secundaria);">Destinatário:
+                                    <span id="emailNotificacao-${log.timestampInicio}"
+                                                class="editable-field"
+                                                onclick="toggleEdit('${log.timestampInicio}', 'emailNotificacao', '${log.emailNotificacao || ''}')"
+                                                style="border-bottom: 1px dotted var(--cor-texto-secundaria); cursor: pointer;">
+                                            ${log.emailNotificacao || '(Clique p/ add)'}
+                                    </span>
+                                </p>
+                                <p style="font-size: 0.8em; margin-top: 5px; color: #b0b0b0;">Notas:
+                                    <span id="obs-${log.timestampInicio}"
+                                            class="editable-field"
+                                            onclick="toggleEdit('${log.timestampInicio}', 'obs', '${log.obs}')"
+                                            style="font-style: italic; cursor: pointer;">
+                                            ${log.obs || '(Clique para adicionar)'}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="action-group">
+                                <select
+                                    class="status-select ${tagClass}"
+                                    onchange="editarStatus(this.value, '${log.timestampInicio}', this)"
+                                >
+                                    ${statusSelect}
+                                </select>
+                                <a href="${mailtoLink}" class="${btnClass}" ${isDisabled ? 'onclick="return false;"' : ''} title="Abre o programa de e-mail para finalizar o envio" target="_blank">
+                                    📩 ${isDisabled ? 'Sem E-mail Destino' : 'Rascunho E-mail'}
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    diaDiv.appendChild(entradaDiv);
+                });
+
+                timelineEl.appendChild(diaDiv);
+            });
+        }
+
+        window.toggleEdit = function(id, campo, valorOriginal) {
+            const targetEl = document.getElementById(`${campo}-${id}`);
+
+            // Se já estiver em modo de edição, ignora
+            if (targetEl.querySelector('.edit-input')) return;
+
+            const inputType = (campo === 'emailNotificacao' || campo === 'emailRemetente') ? 'email' : 'text';
+
+            // Remove o conteúdo original e insere o campo de edição e o botão Salvar
+            const inputHtml = `
+                <input type="${inputType}"
+                        id="input-${campo}-${id}"
+                        class="edit-input"
+                        value="${valorOriginal.replace(/"/g, '&quot;')}"
+                        style="padding: 3px; border: 1px solid var(--cor-principal); border-radius: 3px; font-size: 0.9em; background-color: #333; color: white;"
+                        onkeydown="if(event.key === 'Enter') { salvarEdicao('${id}', '${campo}'); }">
+                <button onclick="salvarEdicao('${id}', '${campo}')"
+                        style="background-color: #28a745; color: white; border: none; padding: 4px 8px; border-radius: 3px; margin-left: 5px; cursor: pointer;">
+                    Salvar
+                </button>
+            `;
+
+            targetEl.innerHTML = inputHtml;
+            targetEl.removeAttribute('onclick');
+            document.getElementById(`input-${campo}-${id}`).focus();
+        };
+
+        window.salvarEdicao = function(id, campo) {
+            const inputEl = document.getElementById(`input-${campo}-${id}`);
+            const novoValor = inputEl.value;
+
+            const logIndex = logs.findIndex(log => log.timestampInicio == id);
+
+            if (logIndex !== -1) {
+                logs[logIndex][campo] = novoValor;
+                salvarLogs();
+                // A chamada a salvarLogs() irá forçar o renderizarTimeline() se a aba estiver ativa, restaurando o modo de visualização.
+            }
+        }
+
+        // ==========================================================
+        // 4. FUNÇÕES DE AÇÃO (Formulário e Remoção)
+        // ==========================================================
+
+        formEl.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const dataRegistro = document.getElementById('data-registro').value;
+            const horaInicio = document.getElementById('hora-inicio').value;
+            const horaFim = document.getElementById('hora-fim').value;
+            const statusInicial = document.getElementById('status-inicial').value;
+            const responsavel = document.getElementById('responsavel').value;
+            const local = document.getElementById('local').value;
+            const emailRemetente = document.getElementById('email-remetente').value;
+            const emailNotificacao = document.getElementById('email-notificacao').value;
+            const obs = document.getElementById('obs').value;
+
+            avisoSobreposicaoEl.style.display = 'none';
+
+            if (horaInicio >= horaFim) {
+                avisoSobreposicaoEl.innerHTML = 'A Hora de Início deve ser ANTERIOR à Hora de Fim!';
+                avisoSobreposicaoEl.style.display = 'block';
+                return;
+            }
+
+            if (verificarSobreposicao(dataRegistro, horaInicio, horaFim)) {
+                avisoSobreposicaoEl.innerHTML = `
+                    ⚠️ Já existe uma atividade cadastrada neste dia entre ${horaInicio} e ${horaFim}.
+                    Por favor, ajuste o horário.
+                `;
+                avisoSobreposicaoEl.style.display = 'block';
+                return;
+            }
+
+            const [hInicio, mInicio] = horaInicio.split(':').map(Number);
+            const dataBase = new Date(dataRegistro);
+            // Cria um timestamp único (milisegundos) para o início do evento, para ser o ID
+            const timestampInicio = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate(), hInicio, mInicio).getTime();
+
+            const novoLog = {
+                timestampInicio: timestampInicio,
+                dataRegistro: dataRegistro,
+                horaInicio: horaInicio,
+                horaFim: horaFim,
+                status: statusInicial,
+                responsavel: responsavel,
+                local: local,
+                emailRemetente: emailRemetente,
+                emailNotificacao: emailNotificacao,
+                obs: obs,
+            };
+
+            logs.push(novoLog);
+            salvarLogs();
+
+            // Limpa campos (mantém o email remetente como padrão)
+            document.getElementById('responsavel').value = '';
+            document.getElementById('local').value = '';
+            document.getElementById('email-notificacao').value = '';
+            document.getElementById('obs').value = '';
+
+            // Vai para a aba de visualização e filtra pela data recém-adicionada
+            openTab('visualizacao', document.querySelector('.tabs .tab-button:nth-child(2)'));
+            filtroDataEl.value = dataRegistro;
+            renderizarTimeline();
+        });
+
+        window.removerLog = function(timestampInicio) {
+            if (confirm("Confirma a remoção deste log?")) {
+                logs = logs.filter(log => log.timestampInicio != timestampInicio);
+                salvarLogs();
+            }
+        }
+
+        window.editarStatus = function(novoStatus, timestampInicio, selectElement) {
+            const logIndex = logs.findIndex(log => log.timestampInicio == timestampInicio);
+
+            if (logIndex !== -1) {
+                logs[logIndex].status = novoStatus;
+                salvarLogs();
+
+                // Atualiza o estilo visual imediatamente
+                selectElement.className = `status-select ${novoStatus.toUpperCase().replace(/\s/g, '')}`;
+            }
+        }
+
+        // ==========================================================
+        // 5. FUNÇÕES DE EXPORTAÇÃO (HTML)
+        // ==========================================================
+
+        window.exportarLogs = function() {
+            if (logs.length === 0) {
+                // Não exibe o alert aqui para não interferir no aviso de fechamento
+                return;
+            }
+
+            // Sort logs by date and time
+            const logsOrdenados = [...logs].sort((a, b) => {
+                // Ordena por data (mais recente primeiro)
+                if (a.dataRegistro < b.dataRegistro) return 1;
+                if (a.dataRegistro > b.dataRegistro) return -1;
+                // Em caso de mesma data, ordena por hora de início (mais cedo primeiro)
+                return horaParaMinutos(a.horaInicio) - horaParaMinutos(b.horaInicio);
+            });
+
+            // Gerar o conteúdo HTML da tabela
+            let htmlContent = `
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Relatório de Rastreamento Logístico - ${getDataAtualFormatada()}</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 20px;
+                            background-color: #121212;
+                            color: #ffffff;
+                        }
+                        h1 { color: #00bcd4; border-bottom: 2px solid #00bcd4; padding-bottom: 10px; }
+                        p { margin-bottom: 5px; font-size: 1em; color: #b0b0b0; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #333; padding: 10px; text-align: left; font-size: 12px; }
+                        th { background-color: #2a2a2a; color: #ffffff; }
+                        /* Cores de status de exportação */
+                        .status-PENDENTE { background-color: #2a2a2a; color: #b0b0b0; }
+                        .status-EMTRANSITO { background-color: #4e4429; color: #ffd700; }
+                        .status-CONCLUÍDA { background-color: #1d3e24; color: #79f298; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Relatório de Rastreamento Logístico</h1>
+                    <p>Relatório gerado em: ${new Date().toLocaleString('pt-BR')}</p>
+                    <p>Total de Logs: ${logs.length}</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Início</th>
+                                <th>Fim</th>
+                                <th>Local</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th>Destinatário</th>
+                                <th>Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            logsOrdenados.forEach(log => {
+                const dataFormatada = new Date(log.dataRegistro + 'T00:00:00').toLocaleDateString('pt-BR'); // Adiciona T00:00:00 para evitar problemas de timezone
+                const statusClass = 'status-' + log.status.toUpperCase().replace(/\s/g, '');
+
+                htmlContent += `
+                    <tr>
+                        <td>${dataFormatada}</td>
+                        <td>${log.horaInicio}</td>
+                        <td>${log.horaFim}</td>
+                        <td>${log.local}</td>
+                        <td>${log.responsavel}</td>
+                        <td class="${statusClass}">${log.status}</td>
+                        <td>${log.emailNotificacao || 'N/A'}</td>
+                        <td>${log.obs || ''}</td>
+                    </tr>
+                `;
+            });
+
+            htmlContent += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            // Cria o blob e o link para download
+            const blob = new Blob([htmlContent], { type: "text/html" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `rastreamento_logistico_${getDataAtualFormatada()}.html`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            // NÃO ADICIONAR alert() AQUI! O navegador pode bloquear.
+        };
+
+        // ==========================================================
+        // 6. LÓGICA DE AUTOMAÇÃO (MUDANÇA DE STATUS)
+        // ==========================================================
+
+        function checarStatusAutomatico() {
+            let statusMudou = false;
+            const dataAtual = getDataAtualFormatada();
+            const horaAtual = getHoraAtualFormatada(); // Ex: "11:50"
+            const minutosAtuais = horaParaMinutos(horaAtual);
+
+            logs.forEach(log => {
+                const logMinInicio = horaParaMinutos(log.horaInicio);
+                const logMinFim = horaParaMinutos(log.horaFim);
+
+                // Apenas verifica logs do dia de hoje
+                if (log.dataRegistro !== dataAtual) return;
+
+                // Não muda logs concluídos
+                if (log.status === 'CONCLUÍDA') return;
+
+                // 1. Checar se deve ir para EM TRÂNSITO (Se é PENDENTE e a hora de início chegou)
+                if (log.status === 'PENDENTE' && minutosAtuais >= logMinInicio) {
+                    log.status = 'EM TRÂNSITO';
+                    statusMudou = true;
+                }
+
+                // 2. Checar se deve ir para CONCLUÍDA (Se está EM TRÂNSITO e a hora de fim chegou)
+                if (log.status === 'EM TRÂNSITO' && minutosAtuais >= logMinFim) {
+                    log.status = 'CONCLUÍDA';
+                    statusMudou = true;
+                }
+            });
+
+            if (statusMudou) {
+                salvarLogs();
+            }
+        }
+
+        // ==========================================================
+        // 7. INICIALIZAÇÃO E AVISO DE SAÍDA (BACKUP FORÇADO)
+        // ==========================================================
+
+        function init() {
+            carregarLogs();
+            // Define a data de registro padrão
+            document.getElementById('data-registro').value = getDataAtualFormatada();
+
+            // Roda a verificação do status imediatamente ao carregar
+            checarStatusAutomatico();
+
+            // Abre a aba de cadastro por padrão, mas verifica se já existe algum log para sugerir a visualização
+            if (logs.length > 0) {
+                 // Define o filtro para hoje, se houver logs
+                 filtroDataEl.value = getDataAtualFormatada();
+                 openTab('visualizacao', document.querySelector('.tabs .tab-button:nth-child(2)'));
+            } else {
+                openTab('cadastro', document.querySelector('.tabs .tab-button:nth-child(1)'));
+            }
+
+
+            // Roda a verificação do status a cada 10 segundos para maior precisão
+            setInterval(checarStatusAutomatico, 10000);
+        }
+
+        // >>> LÓGICA DE BACKUP FORÇADO AO FECHAR <<<
+        window.addEventListener('beforeunload', function (e) {
+            if (logs.length > 0) {
+                // Tenta iniciar o download
+                exportarLogs();
+
+                // Mensagem de aviso padrão do navegador.
+                const confirmationMessage = 'Seus dados de rastreamento estão salvos localmente. Por favor, VERIFIQUE se o DOWNLOAD do backup (arquivo HTML) foi concluído antes de sair! Clique em "Cancelar" para verificar.';
+
+                (e || window.event).returnValue = confirmationMessage;
+                return confirmationMessage;
+            }
+            // Se não houver logs, retorna undefined e fecha sem aviso
+        });
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
