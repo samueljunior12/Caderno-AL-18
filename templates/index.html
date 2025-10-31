@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreamento Logístico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Variáveis Padrão (TEMA DARK FIXO) */
+        :root {
+            --cor-principal: #00bcd4; /* Azul Ciano Brilhante (Destaque principal) */
+            --cor-fundo-escuro: #121212; /* Fundo Principal Preto */
+            --cor-fundo-card: #1e1e1e; /* Fundo dos elementos Escuro */
+            --cor-texto-primaria: #ffffff; /* Texto Branco */
+            --cor-texto-secundaria: #b0b0b0; /* Cinza Claro Secundário */
+            --cor-borda: #333333; /* Borda Escura */
+            --sombra-card: 0 4px 12px rgba(0, 0, 0, 0.5); /* Sombra mais visível no fundo escuro */
+            --cor-botao-padrao: #007bff; /* Azul padrão para botões */
+
+            /* CORES PETROBRAS PARA LOGIN */
+            --cor-petro-fundo-login: #0A1C2A;
+            --cor-petro-destaque: #00A38C;
+        }
+
+        /* Estilos Base (Dark Mode Fixo) */
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--cor-fundo-escuro);
+            margin: 0;
+            padding: 20px;
+            color: var(--cor-texto-primaria);
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: var(--cor-fundo-card);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--sombra-card);
+            border: 1px solid var(--cor-borda);
+            position: relative;
+        }
+        h1 {
+            color: var(--cor-principal);
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            font-size: 2em;
+            border-bottom: 2px solid var(--cor-principal);
+        }
+
+        /* ---------------------------------- */
+        /* CONTROLES SUPERIORES (LOGOUT) */
+        /* ---------------------------------- */
+        .top-controls {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #logout-button {
+            background-color: #333;
+            color: var(--cor-texto-secundaria);
+            border: 1px solid #444;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        #logout-button:hover {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        /* ---------------------------------- */
+        /* ABAS (TABS) */
+        /* ---------------------------------- */
+        .tabs { display: flex; margin-bottom: 0; }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #333;
+            border: 1px solid var(--cor-borda);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            margin-right: 2px;
+            color: var(--cor-texto-secundaria);
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .tab-button.active {
+            background-color: var(--cor-fundo-card);
+            color: var(--cor-principal);
+            border-color: var(--cor-borda);
+            border-top: 3px solid var(--cor-principal);
+            padding-top: 8px;
+        }
+        .tab-content {
+            background-color: var(--cor-fundo-card);
+            padding: 20px;
+            border-radius: 0 6px 6px 6px;
+            min-height: 300px;
+            border: 1px solid var(--cor-borda);
+            border-top: none;
+        }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        /* ---------------------------------- */
+        /* FORMULÁRIO DE CADASTRO */
+        /* ---------------------------------- */
+        #form-nova-entrada {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px 20px;
+            align-items: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group label {
+            font-size: 0.9em;
+            color: var(--cor-texto-secundaria);
+            font-weight: 600;
+        }
+        .full-width-group {
+            grid-column: 1 / span 2;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2a2a2a;
+            color: var(--cor-texto-primaria);
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        /* Status Inicial Fixo (PENDENTE) */
+        .fixed-status {
+            padding: 10px 12px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #383838;
+            color: var(--cor-texto-primaria);
+            box-sizing: border-box;
+            font-size: 1em;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        /* BOTÃO ADICIONAR ATIVIDADE */
+        #btn-adicionar {
+            grid-column: 1 / span 2;
+            padding: 14px;
+            background-color: var(--cor-botao-padrao);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1.1em;
+            font-family: 'PT Sans', sans-serif;
+            transition: background-color 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        #btn-adicionar:hover {
+            background-color: #0056b3;
+        }
+
+        /* ---------------------------------- */
+        /* ABA 2: VISUALIZAÇÃO E EDIÇÃO */
+        /* ---------------------------------- */
+        .filtro-area {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid var(--cor-borda);
+            border-radius: 4px;
+            background-color: #242424;
+        }
+
+        .dia-header {
+            background-color: var(--cor-principal);
+            color: var(--cor-fundo-escuro);
+            padding: 8px 15px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .entrada-timeline {
+            display: grid;
+            grid-template-columns: 100px 1fr auto;
+            gap: 15px;
+            padding: 15px;
+            background-color: #242424;
+            border-left: 5px solid var(--cor-principal);
+            position: relative;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* DESTAQUE PARA AGENDAMENTO FIXO */
+        .entrada-timeline.fixed-schedule {
+             border-left: 5px solid #ffc107; /* Destaque Amarelo para AGENDADO */
+             background-color: #38301c; /* Fundo mais escuro */
+        }
+        .entrada-timeline.fixed-schedule .time-label {
+            color: #ffc107;
+            border-color: #ffc107;
+        }
+        .entrada-timeline.fixed-schedule .details-info p span {
+            color: #ffc107;
+        }
+
+        .time-label {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--cor-principal);
+            background-color: #2a2a2a;
+            border: 1px solid var(--cor-principal);
+            border-radius: 4px;
+            text-align: center;
+            height: 100%;
+        }
+
+        /* Botão X APAGAR */
+        .btn-remover {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .btn-remover:hover {
+            background: #c82333;
+        }
+
+        .action-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            justify-content: space-evenly;
+            align-items: stretch;
+            min-width: 120px;
+        }
+
+        .btn-acao {
+            background-color: var(--cor-botao-padrao);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-decoration: none;
+            text-align: center;
+            transition: background-color 0.2s, opacity 0.2s;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-acao.disabled {
+            background-color: #495057;
+            cursor: not-allowed;
+            color: #b0b0b0;
+        }
+        .btn-acao.exportar {
+            background-color: #28a745;
+            margin-top: 15px;
+        }
+        .btn-acao.exportar:hover { background-color: #1e7e34; }
+
+        /* Botão Notificação Destaque (quando PENDENTE ou EM TRÂNSITO) */
+        .btn-acao.notificar {
+            background-color: #00bcd4; /* Azul Ciano */
+            box-shadow: 0 0 10px rgba(0, 188, 212, 0.5);
+            animation: pulse 1.5s infinite;
+        }
+        .btn-acao.notificar:hover {
+            background-color: #008fa3;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 188, 212, 0.5); }
+            50% { transform: scale(1.02); box-shadow: 0 0 15px rgba(0, 188, 212, 1); }
+            100% { transform: scale(1); box-shadow: 0 0 10px rgba(0, 188, 212, 0.5); }
+        }
+
+
+        /* Estilos de Status (Display) */
+        .status-display {
+            padding: 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            font-size: 0.9em;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+            line-height: 1.2;
+        }
+
+        .status-display.EMTRÂNSITO {
+            background-color: #4e4429;
+            color: #ffd700;
+            border-color: #6a5d2b;
+        }
+        .status-display.CONCLUÍDA {
+            background-color: #1d3e24;
+            color: #79f298;
+            border-color: #2b5736;
+        }
+        .status-display.PENDENTE {
+            background-color: #2a2a2a;
+            color: var(--cor-texto-secundaria);
+            border-color: #444;
+        }
+        /* NOVO STATUS FIXO */
+        .status-display.AGENDADO {
+            background-color: #5d4037; /* Marrom escuro */
+            color: #ffc107; /* Amarelo */
+            border-color: #8d6e63;
+        }
+
+        /* Estilos de Mensagens */
+        .alert-error {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            background-color: #58151c;
+            color: #f7a0a8;
+            border: 1px solid #721c24;
+            font-weight: 600;
+        }
+
+        /* Custom Alert (MsgBox) */
+        .custom-alert-box {
+            background-color: var(--cor-fundo-card);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            border: 2px solid var(--cor-principal);
+            animation: fadeInScale 0.3s ease-out;
+        }
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(3px);
+        }
+
+        .custom-alert-box h3 {
+            color: #79f298;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .custom-alert-box pre {
+            white-space: pre-wrap;
+            text-align: left;
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 5px solid #79f298;
+            color: var(--cor-texto-primaria);
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+
+        .custom-alert-box button {
+            margin-top: 20px;
+            padding: 10px 25px;
+            background-color: var(--cor-principal);
+            color: var(--cor-fundo-escuro);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ---------------------------------- */
+        /* TELA DE LOGIN (MANTIDA) */
+        /* ---------------------------------- */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--cor-petro-fundo-login);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            background-image: linear-gradient(135deg, #0a1c2a 0%, #173648 100%);
+        }
+
+        #login-box {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            border-top: 5px solid var(--cor-petro-destaque);
+        }
+        #login-box h2 {
+            color: var(--cor-petro-destaque);
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 1.8em;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #login-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background-color: #2a2a2a;
+            color: var(--cor-texto-primaria);
+            box-sizing: border-box;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        #login-form input:focus {
+            border-color: var(--cor-petro-destaque);
+            outline: none;
+        }
+        #login-form button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--cor-petro-destaque);
+            color: var(--cor-fundo-escuro);
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+        #login-form button:hover {
+            background-color: #007d6a;
+            transform: translateY(-1px);
+        }
+        #login-error {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: none;
+        }
+
+        /* ESTILO PARA A CAIXA DE FILTRO DE EXPORTAÇÃO */
+        .export-filter-box {
+            background-color: var(--cor-fundo-card);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            width: 90%;
+            max-width: 400px;
+            text-align: left;
+            border: 2px solid var(--cor-principal);
+            animation: fadeInScale 0.3s ease-out;
+            color: var(--cor-texto-primaria);
+        }
+        .export-filter-box h3 {
+            color: var(--cor-principal);
+            margin-top: 0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .export-filter-box p.pdf-tip {
+            font-size: 0.8em;
+            color: #ffd700; /* Amarelo */
+            text-align: center;
+            margin-top: 15px;
+            padding: 8px;
+            border: 1px dashed #4e4429;
+            border-radius: 4px;
+            background-color: #2a2a2a;
+        }
+        .export-filter-box label {
+            display: block;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--cor-texto-secundaria);
+        }
+        .export-filter-box input[type="text"],
+        .export-filter-box input[type="date"],
+        .export-filter-box select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2a2a2a;
+            color: var(--cor-texto-primaria);
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        .export-filter-box button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 10px 25px;
+            background-color: #28a745; /* Verde */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.2s;
+        }
+        .export-filter-box button:hover {
+            background-color: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div id="login-box">
+            <h2>
+                <svg class="login-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Login de Acesso
+            </h2>
+            <form id="login-form" onsubmit="fazerLogin(event)">
+                <input type="text"
+                       id="username"
+                       placeholder="Usuário"
+                       onkeydown="navigateToNextInput(event, 'password')"
+                       required
+                       autofocus>
+                <input type="password" id="password" placeholder="Senha" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <p id="login-error">Usuário ou senha incorretos. Tente novamente.</p>
+        </div>
+    </div>
+    <div id="app-content" style="display: none;">
+        <div class="container">
+
+            <div class="top-controls">
+                <button id="logout-button" onclick="fazerLogout()">Sair (Esc)</button>
+            </div>
+
+            <h1>Rastreamento Logístico de Carro Correio</h1>
+
+            <div class="tabs">
+                <div class="tab-button active" onclick="openTab('cadastro', this)">➕ Atividade</div>
+                <div class="tab-button" onclick="openTab('visualizacao', this)">📋 Visualização e Busca</div>
+            </div>
+
+            <div class="tab-content">
+
+                <div id="cadastro" class="tab-pane active">
+                    <p style="color: var(--cor-principal); margin-bottom: 20px; font-weight: 600;">Preencha os campos abaixo para registrar uma nova atividade.</p>
+
+                    <form id="form-nova-entrada">
+
+                        <div class="form-group">
+                            <label for="data-registro">Data da Atividade</label>
+                            <input type="date" id="data-registro" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="status-inicial-display">Status Inicial</label>
+                            <div id="status-inicial-display" class="fixed-status">PENDENTE</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hora-inicio">Hora de Início</label>
+                            <input type="time" id="hora-inicio" value="07:00" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hora-fim">Hora de Fim</label>
+                            <input type="time" id="hora-fim" value="11:00" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="responsavel">Responsável / Solicitante</label>
+                            <input type="text" id="responsavel" placeholder="Nome" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="local">Local</label>
+                            <input type="text" id="local" placeholder="Ex: Macaé, Rio de Janeiro" required>
+                        </div>
+
+                        <div class="form-group full-width-group">
+                            <label for="email-remetente">E-mail Remetente (Origem)</label>
+                            <input type="email"
+                                id="email-remetente"
+                                placeholder="Seu e-mail Petrobras (Origem)"
+                                value="samuel.nascimento1.prestserv@petrobras.com.br"
+                                required>
+                        </div>
+
+                        <div class="form-group full-width-group">
+                            <label for="email-notificacao">E-mail Destino (Notificação)</label>
+                            <input type="email" id="email-notificacao" placeholder="E-mail do destinatário da notificação">
+                        </div>
+
+                        <div class="form-group full-width-group">
+                            <label for="obs">Observações / Detalhes</label>
+                            <input type="text" id="obs" placeholder="Detalhes adicionais sobre a atividade.">
+                        </div>
+
+                        <div class="form-group full-width-group">
+                            <button type="submit" id="btn-adicionar">Adicionar Atividade</button>
+                        </div>
+                    </form>
+                    <div id="aviso-sobreposicao" class="alert-error" style="display: none;"></div>
+
+                    <button onclick="promptExportFilters()" class="btn-acao full-width-group exportar">
+                        💾 Gerar Relatório
+                    </button>
+                </div>
+
+                <div id="visualizacao" class="tab-pane">
+                    <div class="filtro-area">
+                        <label for="data-filtro">🔎 Informe a Data da Busca:</label>
+                        <input type="date" id="data-filtro" onchange="renderizarTimeline()">
+                        <button onclick="mostrarTodosLogs()">Mostrar Tudo</button>
+                    </div>
+
+                    <div id="timeline-rastreamento">
+                        </div>
+                </div>
+            </div>
+
+            <p id="local-status" style="font-size: 0.8em; text-align: center; color: var(--cor-texto-secundaria); margin-top: 20px;">
+                *Dados salvos localmente no seu navegador. A automação de status funciona apenas com a página aberta.
+            </p>
+        </div>
+    </div>
+
+    <div id="custom-alert-overlay" class="custom-alert-overlay">
+        <div id="custom-alert-box" class="custom-alert-box">
+            <h3>✅ Exclusão Bem-Sucedida!</h3>
+            <pre id="custom-alert-message"></pre>
+            <button onclick="hideCustomAlert()">Entendido</button>
+        </div>
+    </div>
+
+    <div id="export-filter-overlay" class="custom-alert-overlay">
+        <div class="export-filter-box">
+            <h3>⚙️ Configurar Relatório de Rastreamento</h3>
+            <p style="font-size: 0.9em; color: var(--cor-texto-secundaria); text-align: center;">
+                Preencha um ou mais campos para filtrar o relatório, ou deixe-os vazios para exportar TUDO.
+            </p>
+
+            <label for="filter-data">Filtrar por Data:</label>
+            <input type="date" id="filter-data">
+
+            <label for="filter-responsavel">Filtrar por Responsável:</label>
+            <input type="text" id="filter-responsavel" placeholder="Nome completo ou parcial">
+
+            <label for="filter-local">Filtrar por Local (Destino):</label>
+            <input type="text" id="filter-local" placeholder="Ex: Macaé, Santos">
+
+            <button onclick="executeExport()">Gerar Relatório Filtrado (HTML)</button>
+
+            <p class="pdf-tip">
+                💡 Para exportar como PDF, abra o arquivo HTML gerado e use
+                **Ctrl + P** (ou Cmd + P) no navegador, escolhendo
+                "Salvar como PDF" como impressora.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'rastreioLogsClean';
+        const timelineEl = document.getElementById('timeline-rastreamento');
+        const formEl = document.getElementById('form-nova-entrada');
+        const filtroDataEl = document.getElementById('data-filtro');
+        const avisoSobreposicaoEl = document.getElementById('aviso-sobreposicao');
+
+        // SENHA DE REMOÇÃO: 71760864
+        const SENHA_REMOCAO = "71760864";
+
+        // Credenciais de Login
+        const LOGIN_USER = "SOPARM";
+        const LOGIN_PASS = "242920";
+
+        // Agenda fixa semanal (DayIndex: 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb)
+        const AGENDAMENTO_FIXO_TEMPLATES = [
+            // Terça-feira (Dia 2): Araçás
+            { dayIndex: 2, horaInicio: "07:00", horaFim: "17:00", local: "Araçás", status: "AGENDADO" },
+            // Quarta-feira (Dia 3): Bálsamo
+            { dayIndex: 3, horaInicio: "07:00", horaFim: "17:00", local: "Bálsamo", status: "AGENDADO" },
+            // Quinta-feira (Dia 4): Santiago (manhã)
+            { dayIndex: 4, horaInicio: "07:00", horaFim: "11:59", local: "Santiago", status: "AGENDADO" },
+            // Quinta-feira (Dia 4): Buracica (tarde)
+            { dayIndex: 4, horaInicio: "12:00", horaFim: "17:00", local: "Buracica", status: "AGENDADO" }
+        ];
+
+        let logs = [];
+
+        // ==========================================================
+        // 1. UTILITÁRIOS DE HORA/DATA
+        // ==========================================================
+
+        function horaParaMinutos(hora) {
+            const [h, m] = hora.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        /**
+         * Retorna a lista de agendamentos fixos para uma data específica.
+         * @param {string} dataISO Data no formato YYYY-MM-DD.
+         */
+        function getAgendamentosFixos(dataISO) {
+            if (!dataISO) return [];
+
+            // Adiciona 'T00:00:00' para evitar problemas de fuso horário
+            const dataObj = new Date(dataISO + 'T00:00:00');
+            const diaDaSemana = dataObj.getDay(); // 0=Dom, 6=Sáb
+
+            const logsFixosDoDia = AGENDAMENTO_FIXO_TEMPLATES
+                .filter(template => template.dayIndex === diaDaSemana)
+                .map(template => ({
+                    // Gerar um ID único baseado no dia e hora (necessário para a lógica de filtro)
+                    timestampInicio: dataObj.getTime() + horaParaMinutos(template.horaInicio),
+                    dataRegistro: dataISO,
+                    horaInicio: template.horaInicio,
+                    horaFim: template.horaFim,
+                    status: template.status,
+                    responsavel: "Agendamento Fixo - Carro Correio",
+                    local: template.local,
+                    emailRemetente: "Sistema.AgendamentoFixo@petrobras.com.br",
+                    emailNotificacao: "",
+                    obs: "Agenda fixa semanal, prioridade de agendamento."
+                }));
+
+            return logsFixosDoDia;
+        }
+
+        /**
+         * Verifica sobreposição contra logs salvos E agendamentos fixos.
+         */
+        function verificarSobreposicao(data, inicio, fim, idAtual = null) {
+            const minutosInicio = horaParaMinutos(inicio);
+            const minutosFim = horaParaMinutos(fim);
+
+            // Logs salvos no localStorage, excluindo o atual se for edição
+            const logsSalvos = logs.filter(log => log.dataRegistro === data && log.timestampInicio != idAtual);
+
+            // Logs fixos para esta data
+            const logsFixos = getAgendamentosFixos(data);
+
+            const logsParaChecar = [...logsSalvos, ...logsFixos];
+
+            // Verifica sobreposição em qualquer log
+            return logsParaChecar.some(log => {
+                const logMinInicio = horaParaMinutos(log.horaInicio);
+                const logMinFim = horaParaMinutos(log.horaFim);
+
+                // Sobreposição se (Novo Início < Log Fim) E (Novo Fim > Log Início)
+                const sobreposicao = (
+                    (minutosInicio < logMinFim && minutosFim > logMinInicio)
+                );
+
+                return sobreposicao;
+            });
+        }
+
+        function getHoraAtualFormatada() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        }
+
+        function getDataAtualFormatada() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatarData(dataISO) {
+             if (!dataISO) return '';
+            // Adiciona 'T00:00:00' para evitar problemas de fuso horário
+            const dataObj = new Date(dataISO + 'T00:00:00');
+            const hoje = new Date();
+
+            const dataSemTempo = new Date(dataObj.getFullYear(), dataObj.getMonth(), dataObj.getDate());
+            const hojeSemTempo = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+            if (dataSemTempo.getTime() === hojeSemTempo.getTime()) return 'HOJE';
+
+            return dataObj.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+
+        // ==========================================================
+        // 2. FUNÇÕES DE ARMAZENAMENTO E TABS
+        // ==========================================================
+
+        function carregarLogs() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            logs = data ? JSON.parse(data) : [];
+        }
+
+        function salvarLogs() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+            // Recarrega a timeline para refletir a mudança de status/dados
+            if (document.getElementById('visualizacao').classList.contains('active')) {
+                renderizarTimeline();
+            }
+        }
+
+        window.openTab = function(tabName, elmnt) {
+            const tabPanes = document.getElementsByClassName("tab-pane");
+            for (let i = 0; i < tabPanes.length; i++) {
+                tabPanes[i].classList.remove('active');
+            }
+            const tabButtons = document.getElementsByClassName("tab-button");
+            for (let i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove('active');
+            }
+
+            document.getElementById(tabName).classList.add('active');
+            elmnt.classList.add('active');
+
+            if (tabName === 'visualizacao') {
+                renderizarTimeline();
+            }
+        }
+
+        window.mostrarTodosLogs = function() {
+            filtroDataEl.value = '';
+            // Ao mostrar TUDO, não incluímos os fixos recorrentes, apenas os logs salvos.
+            renderizarTimeline(true);
+        }
+
+
+        // ==========================================================
+        // 3. FUNÇÕES DE RENDERIZAÇÃO
+        // ==========================================================
+
+        /**
+         * Cria o link mailto com o corpo do email dinâmico baseado no status.
+         */
+        function gerarMailtoLink(log) {
+            const dataFormatada = new Date(log.dataRegistro + 'T00:00:00').toLocaleDateString('pt-BR');
+
+            let mainMessage;
+            let subjectPrefix;
+
+            switch (log.status) {
+                case 'EM TRÂNSITO':
+                    mainMessage = `Sua atividade de rastreamento logístico **INICIOU** e o veículo está **EM TRÂNSITO** para o local de destino.`;
+                    subjectPrefix = 'INÍCIO DE ATIVIDADE';
+                    break;
+                case 'CONCLUÍDA':
+                    mainMessage = `A atividade de rastreamento logístico para o local ${log.local} foi **CONCLUÍDA** com sucesso.`;
+                    subjectPrefix = 'ATIVIDADE CONCLUÍDA';
+                    break;
+                case 'PENDENTE':
+                default:
+                    mainMessage = `Sua atividade de rastreamento logístico está **PROGRAMADA** e PENDENTE de início.`;
+                    subjectPrefix = 'PROGRAMAÇÃO DE ATIVIDADE';
+                    break;
+            }
+
+            const signature = `SAMUEL DA SILVA NASCIMENTO JUNIOR\nEquipe de Auditoria\nArmazenagem\nBA/SOP/ARM`;
+
+            const subject = encodeURIComponent(`${subjectPrefix}: ${log.local} - ${dataFormatada} - ${log.status}`);
+
+            const body = encodeURIComponent(
+                `Prezado(a) ${log.responsavel},\n\n` +
+                `${mainMessage}\n\n` +
+                `Detalhes da Programação:\n` +
+                `Data: ${dataFormatada}\n` +
+                `Horário: De ${log.horaInicio} até ${log.horaFim}\n` +
+                `Local: ${log.local}\n` +
+                `Status Atual: ${log.status}\n\n` +
+                `Observações: ${log.obs || 'Nenhuma observação adicional.'}\n\n` +
+                `Atenciosamente,\n\n` +
+                `${signature}`
+            );
+
+            const cc = encodeURIComponent(log.emailRemetente || '');
+
+            return `mailto:${log.emailNotificacao}?subject=${subject}&body=${body}&cc=${cc}`;
+        }
+
+
+        function renderizarTimeline(mostrarTudo = false) {
+            timelineEl.innerHTML = '';
+
+            const dataFiltro = filtroDataEl.value;
+
+            if (!dataFiltro && !mostrarTudo && logs.length > 0) {
+                 filtroDataEl.value = getDataAtualFormatada();
+                 return renderizarTimeline();
+            }
+
+            if (!dataFiltro && !mostrarTudo && logs.length === 0) {
+                 timelineEl.innerHTML = `
+                     <p style="text-align: center; color: var(--cor-texto-secundaria); padding: 20px 0;">
+                         Nenhum log registrado. Comece adicionando uma nova atividade na aba "➕ Atividade".
+                     </p>`;
+                 return;
+            }
+
+            // 1. Coletar logs salvos (filtrados por data ou todos)
+            const logsFiltradosSalvos = dataFiltro
+                ? logs.filter(log => log.dataRegistro === dataFiltro)
+                : logs;
+
+            let logsParaRenderizar = [...logsFiltradosSalvos];
+
+            // 2. Adicionar agendamentos fixos APENAS se houver filtro de data (para evitar sobrecarga e logs desnecessários)
+            if (dataFiltro) {
+                const logsFixosDoDia = getAgendamentosFixos(dataFiltro);
+                logsParaRenderizar.push(...logsFixosDoDia);
+            }
+
+            if (logsParaRenderizar.length === 0) {
+                const mensagem = dataFiltro
+                    ? `❌ Nenhuma programação encontrada para a data ${formatarData(dataFiltro)}.`
+                    : 'Nenhum log registrado até o momento.';
+
+                timelineEl.innerHTML = `<p style="text-align: center; color: var(--cor-texto-secundaria); padding: 20px 0;">${mensagem}</p>`;
+                return;
+            }
+
+            // 3. Agrupar e ordenar logs (salvos + fixos)
+            const logsPorDia = logsParaRenderizar.reduce((acc, log) => {
+                const data = log.dataRegistro;
+                if (!acc[data]) { acc[data] = []; }
+                acc[data].push(log);
+                return acc;
+            }, {});
+
+            const datasOrdenadas = Object.keys(logsPorDia).sort().reverse();
+
+            datasOrdenadas.forEach(data => {
+                const logsDoDia = logsPorDia[data];
+                logsDoDia.sort((a, b) => horaParaMinutos(a.horaInicio) - horaParaMinutos(b.horaInicio));
+
+                const diaDiv = document.createElement('div');
+                diaDiv.className = 'dia-rastreio';
+                diaDiv.innerHTML = `<div class="dia-header">📅 ${formatarData(data)}</div>`;
+
+                logsDoDia.forEach(log => {
+                    const isFixed = log.status === 'AGENDADO'; // Identifica logs fixos
+
+                    const tagClass = log.status.toUpperCase().replace(/\s/g, '');
+
+                    const mailtoLink = isFixed ? '#' : (log.emailNotificacao ? gerarMailtoLink(log) : '#');
+                    const isDisabled = isFixed || !log.emailNotificacao;
+
+                    // Lógica para o texto do botão e a classe de destaque (NOVO)
+                    let btnText = '📩 Rascunho E-mail';
+                    let btnActionClass = 'btn-acao';
+
+                    if (isFixed) {
+                        btnText = '🔒 Agenda Fixa';
+                        btnActionClass = 'btn-acao disabled';
+                    } else if (!log.emailNotificacao) {
+                         btnText = 'Email Destino Ausente';
+                         btnActionClass = 'btn-acao disabled';
+                    } else {
+                        // Se o status for PENDENTE ou EM TRÂNSITO, usamos o destaque 'notificar'
+                        if (log.status === 'PENDENTE') {
+                            btnText = '📩 Notificar Agendamento';
+                            btnActionClass = 'btn-acao notificar';
+                        } else if (log.status === 'EM TRÂNSITO') {
+                            btnText = '📩 Notificar INÍCIO (AGORA)';
+                            btnActionClass = 'btn-acao notificar';
+                        } else if (log.status === 'CONCLUÍDA') {
+                            btnText = '📩 Notificar CONCLUSÃO';
+                            btnActionClass = 'btn-acao'; // Sem destaque de 'pulse' para concluído
+                        }
+                    }
+
+                    // Logs fixos não podem ser removidos.
+                    const removeButtonHtml = isFixed ? '' : `<button class="btn-remover" onclick="removerLog('${log.timestampInicio}')">X Apagar</button>`;
+
+
+                    const entradaDiv = document.createElement('div');
+                    entradaDiv.className = 'entrada-timeline' + (isFixed ? ' fixed-schedule' : '');
+                    entradaDiv.innerHTML = `
+                        ${removeButtonHtml}
+                        <div class="time-label">
+                            ${log.horaInicio} <span>até</span> ${log.horaFim}
+                        </div>
+                        <div class="details">
+                            <div class="details-info" style="color: var(--cor-texto-primaria);">
+                                <p style="font-size: 1.1em; font-weight: 700; margin-bottom: 5px;">
+                                    ${isFixed ? 'Compromisso Fixo: ' : 'Local: '}
+                                    <span style="font-weight: 400;">${log.local}</span>
+                                </p>
+                                <p style="font-size: 0.9em; margin-bottom: 3px;">Solicitante:
+                                    <span style="font-weight: 400;">${log.responsavel}</span>
+                                </p>
+                                <p style="font-size: 0.8em; color: var(--cor-texto-secundaria);">Destinatário:
+                                    <span style="font-weight: 400;">${log.emailNotificacao || 'N/A'}</span>
+                                </p>
+                                <p style="font-size: 0.8em; margin-top: 5px; color: #b0b0b0;">Notas:
+                                    <span style="font-style: italic; font-weight: 400;">${log.obs || 'Nenhuma'}</span>
+                                </p>
+                            </div>
+                            <div class="action-group">
+                                <div class="status-display ${tagClass}">
+                                    ${log.status}
+                                </div>
+                                <a href="${mailtoLink}" class="${btnActionClass}" ${isDisabled ? 'onclick="return false;"' : ''} title="${isFixed ? 'Agendamento Fixo, não requer notificação.' : 'Abre o programa de e-mail para finalizar o envio'}" target="_blank">
+                                    ${btnText}
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    diaDiv.appendChild(entradaDiv);
+                });
+
+                timelineEl.appendChild(diaDiv);
+            });
+        }
+
+        // ==========================================================
+        // 4. FUNÇÕES DE AÇÃO (Formulário e Remoção)
+        // ==========================================================
+
+        function showCustomAlert(message) {
+            document.getElementById('custom-alert-message').textContent = message;
+            document.getElementById('custom-alert-overlay').style.display = 'flex';
+        }
+
+        window.hideCustomAlert = function() {
+            document.getElementById('custom-alert-overlay').style.display = 'none';
+        }
+
+        formEl.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const dataRegistro = document.getElementById('data-registro').value;
+            const horaInicio = document.getElementById('hora-inicio').value;
+            const horaFim = document.getElementById('hora-fim').value;
+
+            const statusInicial = "PENDENTE";
+
+            const responsavel = document.getElementById('responsavel').value;
+            const local = document.getElementById('local').value;
+            const emailRemetente = document.getElementById('email-remetente').value;
+            const emailNotificacao = document.getElementById('email-notificacao').value;
+            const obs = document.getElementById('obs').value;
+
+            avisoSobreposicaoEl.style.display = 'none';
+
+            if (horaInicio >= horaFim) {
+                avisoSobreposicaoEl.innerHTML = 'A Hora de Início deve ser ANTERIOR à Hora de Fim!';
+                avisoSobreposicaoEl.style.display = 'block';
+                return;
+            }
+
+            // Verifica sobreposição contra logs salvos E fixos
+            if (verificarSobreposicao(dataRegistro, horaInicio, horaFim)) {
+                // Obtém os logs que causam a sobreposição para dar uma mensagem mais específica
+                const logsFixos = getAgendamentosFixos(dataRegistro);
+                let msgDetalhe = '';
+
+                logsFixos.forEach(log => {
+                    const logMinInicio = horaParaMinutos(log.horaInicio);
+                    const logMinFim = horaParaMinutos(log.horaFim);
+                    const minutosInicio = horaParaMinutos(horaInicio);
+                    const minutosFim = horaParaMinutos(horaFim);
+
+                    if (minutosInicio < logMinFim && minutosFim > logMinInicio) {
+                         msgDetalhe += `O carro já tem o destino fixo "${log.local}" entre ${log.horaInicio} e ${log.horaFim}. `;
+                    }
+                });
+
+                // Se houver conflito com agenda fixa, prioriza essa mensagem
+                if (msgDetalhe) {
+                    avisoSobreposicaoEl.innerHTML = `
+                        ⚠️ **CONFLITO DE AGENDA FIXA!** O carro correio já tem um compromisso: ${msgDetalhe}
+                        Por favor, ajuste o horário ou a data.
+                    `;
+                } else {
+                    // Mensagem de sobreposição de logs salvos
+                    avisoSobreposicaoEl.innerHTML = `
+                        ⚠️ Já existe uma atividade cadastrada neste dia entre ${horaInicio} e ${horaFim}.
+                        Por favor, ajuste o horário.
+                    `;
+                }
+
+                avisoSobreposicaoEl.style.display = 'block';
+                return;
+            }
+
+            const [hInicio, mInicio] = horaInicio.split(':').map(Number);
+            const dataBase = new Date(dataRegistro);
+            const timestampInicio = new Date(dataBase.getFullYear(), dataBase.getMonth(), dataBase.getDate(), hInicio, mInicio).getTime();
+
+            const novoLog = {
+                timestampInicio: timestampInicio,
+                dataRegistro: dataRegistro,
+                horaInicio: horaInicio,
+                horaFim: horaFim,
+                status: statusInicial,
+                responsavel: responsavel,
+                local: local,
+                emailRemetente: emailRemetente,
+                emailNotificacao: emailNotificacao,
+                obs: obs,
+            };
+
+            logs.push(novoLog);
+            salvarLogs();
+
+            document.getElementById('responsavel').value = '';
+            document.getElementById('local').value = '';
+            document.getElementById('email-notificacao').value = '';
+            document.getElementById('obs').value = '';
+
+            openTab('visualizacao', document.querySelector('.tabs .tab-button:nth-child(2)'));
+            filtroDataEl.value = dataRegistro;
+            renderizarTimeline();
+        });
+
+        window.removerLog = function(timestampInicio) {
+            const logParaRemover = logs.find(log => log.timestampInicio == timestampInicio);
+
+            if (!logParaRemover) {
+                alert("Erro: Log não encontrado.");
+                return;
+            }
+
+            // Impede remoção de logs fixos caso alguém tente.
+            if (logParaRemover.status === 'AGENDADO') {
+                 alert("Esta é uma atividade de agendamento fixo semanal e não pode ser removida.");
+                 return;
+            }
+
+
+            const senha = prompt("Para remover este log, por favor, digite a senha de segurança (8 dígitos):");
+
+            if (senha === SENHA_REMOCAO) {
+                if (confirm("SENHA CORRETA. Confirma a exclusão definitiva deste log?")) {
+
+                    const dataFormatada = new Date(logParaRemover.dataRegistro + 'T00:00:00').toLocaleDateString('pt-BR');
+                    const horario = `${logParaRemover.horaInicio} até ${logParaRemover.horaFim}`;
+
+                    const notificacaoMsg = `Atividade: ${logParaRemover.local}\nData: ${dataFormatada}\nHorário: ${horario}\n\nStatus: REMOVIDA\nHorário disponível para novo lançamento.`;
+
+                    logs = logs.filter(log => log.timestampInicio != timestampInicio);
+                    salvarLogs();
+
+                    showCustomAlert(notificacaoMsg);
+                }
+            } else if (senha !== null) {
+                alert("Senha incorreta. A remoção foi cancelada.");
+            }
+        }
+
+        // ==========================================================
+        // 5. FUNÇÕES DE EXPORTAÇÃO COM FILTRO
+        // ==========================================================
+
+        // Exibe a caixa de diálogo para configurar os filtros
+        window.promptExportFilters = function() {
+            if (logs.length === 0) {
+                alert('Não há atividades para exportar.');
+                return;
+            }
+             // Limpa os campos antes de abrir
+            document.getElementById('filter-data').value = '';
+            document.getElementById('filter-responsavel').value = '';
+            document.getElementById('filter-local').value = '';
+
+            document.getElementById('export-filter-overlay').style.display = 'flex';
+        }
+
+        // Executa a exportação baseada nos filtros
+        window.executeExport = function() {
+            const filterData = document.getElementById('filter-data').value;
+            // Pega o valor dos campos de filtro e transforma em MAIÚSCULAS
+            const filterResponsavel = document.getElementById('filter-responsavel').value.trim().toUpperCase();
+            const filterLocal = document.getElementById('filter-local').value.trim().toUpperCase();
+
+            document.getElementById('export-filter-overlay').style.display = 'none';
+
+            let logsFiltrados = [...logs];
+
+            // 1. Filtrar por Data
+            if (filterData) {
+                logsFiltrados = logsFiltrados.filter(log => log.dataRegistro === filterData);
+
+                // Se está filtrando por data, inclui os logs fixos daquela data no relatório
+                logsFiltrados.push(...getAgendamentosFixos(filterData));
+
+            } else {
+                // Se não há filtro de data, os logs fixos não são incluídos no relatório
+            }
+
+            // 2. Filtrar por Responsável (busca parcial)
+            if (filterResponsavel) {
+                logsFiltrados = logsFiltrados.filter(log =>
+                    log.responsavel.toUpperCase().includes(filterResponsavel)
+                );
+            }
+
+            // 3. Filtrar por Local (busca parcial)
+            if (filterLocal) {
+                logsFiltrados = logsFiltrados.filter(log =>
+                    log.local.toUpperCase().includes(filterLocal)
+                );
+            }
+
+            if (logsFiltrados.length === 0) {
+                alert("Nenhuma atividade encontrada com os filtros aplicados.");
+                return;
+            }
+
+            // Passa os valores de filtro para a função de geração de relatório
+            gerarRelatorio(logsFiltrados, filterData, filterResponsavel, filterLocal);
+        }
+
+        // Geração do relatório (lógica principal de download)
+        function gerarRelatorio(logsToExport, dataFiltro, responsavelFiltro, localFiltro) {
+
+            const logsOrdenados = logsToExport.sort((a, b) => {
+                // Ordenação: do mais recente para o mais antigo, depois por hora
+                if (a.dataRegistro < b.dataRegistro) return 1;
+                if (a.dataRegistro > b.dataRegistro) return -1;
+                return horaParaMinutos(a.horaInicio) - horaParaMinutos(b.horaInicio);
+            });
+
+            const dataRelatorio = getDataAtualFormatada();
+
+            // Mensagem de resumo dos filtros
+            let filtroMsg = '';
+            let nomeArquivoFiltro = '';
+            if (dataFiltro) {
+                filtroMsg += ` | Data: ${formatarData(dataFiltro)}`;
+                nomeArquivoFiltro = `_data_${dataFiltro}`;
+            }
+            if (responsavelFiltro) {
+                 filtroMsg += ` | Responsável: ${responsavelFiltro}`;
+                 nomeArquivoFiltro += `_resp_${responsavelFiltro.toLowerCase().replace(/\s/g, '-')}`;
+            }
+            if (localFiltro) {
+                 filtroMsg += ` | Local: ${localFiltro}`;
+                 nomeArquivoFiltro += `_local_${localFiltro.toLowerCase().replace(/\s/g, '-')}`;
+            }
+
+            // Se não houver filtros, usa a data atual
+            if (!filtroMsg) {
+                filtroMsg = 'Todas as atividades.';
+                nomeArquivoFiltro = `_tudo_${dataRelatorio}`;
+            }
+
+            // INÍCIO DO HTML DO RELATÓRIO
+            let htmlContent = `
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Relatório de Rastreamento Logístico - ${dataRelatorio}</title>
+                    <style>
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 20px;
+                            background-color: #f4f4f4;
+                            color: #333;
+                        }
+                        h1 {
+                            color: #007bff;
+                            border-bottom: 2px solid #007bff;
+                            padding-bottom: 10px;
+                            text-align: center;
+                            margin-top: 20px;
+                        }
+                        p { margin-bottom: 5px; font-size: 1em; color: #666; }
+                        strong { font-weight: bold; color: #333; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
+                        th { background-color: #007bff; color: #ffffff; }
+                        /* Cores de status de exportação */
+                        .status-PENDENTE { background-color: #fff3cd; color: #856404; }
+                        .status-EMTRÂNSITO { background-color: #d1ecf1; color: #0c5460; }
+                        .status-CONCLUÍDA { background-color: #d4edda; color: #155724; }
+                        /* NOVO STATUS FIXO NO RELATÓRIO */
+                        .status-AGENDADO { background-color: #ffe0b2; color: #e65100; font-weight: bold; }
+                    </style>
+                </head>
+                <body>
+                    <h1>
+                        Relatório de Rastreamento Logístico
+                    </h1>
+                    <p>Relatório gerado em: <strong>${new Date().toLocaleString('pt-BR')}</strong></p>
+                    <p>Filtros Aplicados: <strong>${filtroMsg}</strong></p>
+                    <p>Total de Atividades no Relatório: <strong>${logsToExport.length}</strong></p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Início</th>
+                                <th>Fim</th>
+                                <th>Local</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th>Destinatário (Notificação)</th>
+                                <th>Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            // FIM DO HTML DO RELATÓRIO
+
+            logsOrdenados.forEach(log => {
+                const dataFormatada = new Date(log.dataRegistro + 'T00:00:00').toLocaleDateString('pt-BR');
+                const statusClass = 'status-' + log.status.toUpperCase().replace(/\s/g, '');
+
+                htmlContent += `
+                    <tr>
+                        <td>${dataFormatada}</td>
+                        <td>${log.horaInicio}</td>
+                        <td>${log.horaFim}</td>
+                        <td>${log.local}</td>
+                        <td>${log.responsavel}</td>
+                        <td class="${statusClass}"><strong>${log.status}</strong></td>
+                        <td>${log.emailNotificacao || 'N/A'}</td>
+                        <td>${log.obs || ''}</td>
+                    </tr>
+                `;
+            });
+
+            htmlContent += `
+                        </tbody>
+                    </table>
+                </body>
+                </html>
+            `;
+
+            // Lógica de download com Blob
+            const blob = new Blob([htmlContent], { type: "text/html" });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `relatorio_rastreamento${nomeArquivoFiltro}.html`;
+
+            // Adiciona o link ao corpo, simula o clique e remove
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Libera a URL temporária
+            URL.revokeObjectURL(url);
+
+            // Alerta amigável
+            setTimeout(() => {
+                alert(`Download iniciado! O arquivo "${a.download}" deve estar na sua pasta de downloads. Não se esqueça de usar Ctrl+P para salvar como PDF!`);
+            }, 100);
+        }
+
+        // ==========================================================
+        // 6. LÓGICA DE AUTOMAÇÃO (MUDANÇA DE STATUS)
+        // ==========================================================
+
+        function checarStatusAutomatico() {
+            let statusMudou = false;
+            const dataAtual = getDataAtualFormatada();
+            const horaAtual = getHoraAtualFormatada();
+            const minutosAtuais = horaParaMinutos(horaAtual);
+
+            logs.forEach(log => {
+                const logMinInicio = horaParaMinutos(log.horaInicio);
+                const logMinFim = horaParaMinutos(log.horaFim);
+
+                if (log.dataRegistro !== dataAtual) return;
+                // Logs fixos (AGENDADO) e CONCLUÍDA não mudam
+                if (log.status === 'CONCLUÍDA' || log.status === 'AGENDADO') return;
+
+                if (log.status === 'PENDENTE' && minutosAtuais >= logMinInicio) {
+                    log.status = 'EM TRÂNSITO';
+                    statusMudou = true;
+                }
+
+                if (log.status === 'EM TRÂNSITO' && minutosAtuais >= logMinFim) {
+                    log.status = 'CONCLUÍDA';
+                    statusMudou = true;
+                }
+            });
+
+            if (statusMudou) {
+                salvarLogs();
+            }
+        }
+
+        // ==========================================================
+        // 9. MONITORAMENTO DE TECLADO GLOBAL (LOGOUT com ESC)
+        // ==========================================================
+
+        function handleKeydown(event) {
+            if (event.key === 'Escape') {
+                const appContent = document.getElementById('app-content');
+                if (appContent.style.display !== 'none') {
+                    event.preventDefault();
+                    // Se o filtro de exportação estiver aberto, fecha ele primeiro
+                    if (document.getElementById('export-filter-overlay').style.display === 'flex') {
+                         document.getElementById('export-filter-overlay').style.display = 'none';
+                    } else {
+                        fazerLogout();
+                    }
+                }
+            }
+        }
+
+        document.addEventListener('keydown', handleKeydown);
+
+        // ==========================================================
+        // LÓGICA DE LOGIN/LOGOUT
+        // ==========================================================
+
+        window.navigateToNextInput = function(event, nextInputId) {
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                document.getElementById(nextInputId).focus();
+            }
+        }
+
+        window.fazerLogin = function(event) {
+            if (event) {
+                event.preventDefault();
+            }
+
+            const usernameInput = document.getElementById('username').value.toUpperCase();
+            const passwordInput = document.getElementById('password').value;
+            const loginOverlay = document.getElementById('login-overlay');
+            const appContent = document.getElementById('app-content');
+            const loginError = document.getElementById('login-error');
+
+            if (usernameInput === LOGIN_USER && passwordInput === LOGIN_PASS) {
+                loginOverlay.style.display = 'none';
+                appContent.style.display = 'block';
+                init();
+            } else {
+                loginError.style.display = 'block';
+                document.getElementById('password').value = '';
+            }
+        }
+
+        window.fazerLogout = function() {
+            const loginOverlay = document.getElementById('login-overlay');
+            const appContent = document.getElementById('app-content');
+
+            appContent.style.display = 'none';
+            document.getElementById('password').value = '';
+            document.getElementById('username').value = '';
+            document.getElementById('login-error').style.display = 'none';
+            loginOverlay.style.display = 'flex';
+        }
+
+        // ==========================================================
+        // 7. INICIALIZAÇÃO
+        // ==========================================================
+
+        function init() {
+            carregarLogs();
+            document.getElementById('data-registro').value = getDataAtualFormatada();
+            checarStatusAutomatico();
+
+            if (logs.length > 0) {
+                 filtroDataEl.value = getDataAtualFormatada();
+                 openTab('visualizacao', document.querySelector('.tabs .tab-button:nth-child(2)'));
+            } else {
+                openTab('cadastro', document.querySelector('.tabs .tab-button:nth-child(1)'));
+            }
+
+            // Checa o status a cada 10 segundos
+            setInterval(checarStatusAutomatico, 10000);
+        }
+    </script>
+</body>
+</html>
